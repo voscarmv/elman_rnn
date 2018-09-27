@@ -1,0 +1,2 @@
+make mutation rate increase with time. Start at 1000. Finish at 50. Maybe with randoms
+start at rand()%1000 or 2000, finish with rand()%50 or 100

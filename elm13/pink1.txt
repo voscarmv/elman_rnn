@@ -1,0 +1,32 @@
+Chunk size = 12504572
+Format chunk size = 16
+Format tag is 1 = WAVE_FORMAT_PCM Microsoft
+Number of channels = 1
+Sample rate = 44100
+Average bytes per second = 88200
+BlockAlign = 2
+Sample size = 16
+Data size = 12504536
+ave -0.0, min -17235.0, max  17703.0, rms   4120.0
+FFT bin width = 0.0841 Hertz
+fc     31.250, low     22.038, high     44.160 Hz
+fc     31.250, ave -0.0, min -13891.0, max  15145.0, rms   4120.0
+fc     62.500, low     44.244, high     88.320 Hz
+fc     62.500, ave -0.0, min -15512.0, max  16171.0, rms   4120.0
+fc    125.000, low     88.404, high    176.724 Hz
+fc    125.000, ave  0.0, min -14788.0, max  14915.0, rms   4120.0
+fc    250.000, low    176.808, high    353.531 Hz
+fc    250.000, ave  0.0, min -16783.0, max  17607.0, rms   4120.0
+fc    500.000, low    353.616, high    707.063 Hz
+fc    500.000, ave  0.0, min -17129.0, max  17459.0, rms   4120.0
+fc   1000.000, low    707.147, high   1414.210 Hz
+fc   1000.000, ave  0.0, min -17905.0, max  17568.0, rms   4120.0
+fc   2000.000, low   1414.294, high   2828.420 Hz
+fc   2000.000, ave  0.0, min -18938.0, max  19106.0, rms   4120.0
+fc   4000.000, low   2828.504, high   5656.840 Hz
+fc   4000.000, ave  0.0, min -19910.0, max  19166.0, rms   4120.0
+fc   8000.000, low   5656.924, high  11313.680 Hz
+fc   8000.000, ave  0.0, min -18523.0, max  19161.0, rms   4120.0
+fc  16000.000, low  11313.764, high  22050.000 Hz
+fc  16000.000, ave  0.0, min -21491.0, max  19589.0, rms   4120.0
+12504536 audio bytes written to file.

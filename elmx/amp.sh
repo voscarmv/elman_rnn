@@ -1,0 +1,4 @@
+while read W1 W2 W3 ; do
+	AMP=`echo "scale=10;($W3*.25)+.25" | bc`
+	echo "$W1 $W2 $AMP"
+done

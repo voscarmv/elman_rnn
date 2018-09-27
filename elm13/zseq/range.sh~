@@ -1,0 +1,6 @@
+
+CTR=1
+
+while test $CTR -le 1600 ; do
+	./check31b.sh zseq$CTR.dat 
+done

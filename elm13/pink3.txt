@@ -1,0 +1,74 @@
+Chunk size = 36376868
+Format chunk size = 16
+Format tag is 1 = WAVE_FORMAT_PCM Microsoft
+Number of channels = 1
+Sample rate = 44100
+Average bytes per second = 88200
+BlockAlign = 2
+Sample size = 16
+Data size = 36376832
+ave -0.0, min -17235.0, max  17703.0, rms   4120.0
+FFT bin width = 0.0841 Hertz
+fc     19.686, low     17.496, high     22.038 Hz
+fc     19.686, ave  0.0, min -10589.0, max  10900.0, rms   4119.9
+fc     24.803, low     22.122, high     27.758 Hz
+fc     24.803, ave -0.0, min -12877.0, max  12689.0, rms   4120.0
+fc     31.250, low     27.842, high     35.076 Hz
+fc     31.250, ave  0.0, min -13679.0, max  13468.0, rms   4120.0
+fc     39.373, low     35.160, high     44.160 Hz
+fc     39.373, ave -0.0, min -15743.0, max  15634.0, rms   4120.0
+fc     49.606, low     44.244, high     55.599 Hz
+fc     49.606, ave  0.0, min -12713.0, max  12663.0, rms   4120.0
+fc     62.500, low     55.684, high     70.151 Hz
+fc     62.500, ave -0.0, min -13691.0, max  13631.0, rms   4120.0
+fc     78.745, low     70.235, high     88.320 Hz
+fc     78.745, ave -0.0, min -15784.0, max  15664.0, rms   4120.0
+fc     99.213, low     88.404, high    111.283 Hz
+fc     99.213, ave -0.0, min -14394.0, max  14399.0, rms   4120.0
+fc    125.000, low    111.367, high    140.302 Hz
+fc    125.000, ave  0.0, min -15845.0, max  15843.0, rms   4120.0
+fc    157.490, low    140.386, high    176.724 Hz
+fc    157.490, ave -0.0, min -15564.0, max  15729.0, rms   4120.0
+fc    198.425, low    176.808, high    222.650 Hz
+fc    198.425, ave  0.0, min -17505.0, max  17652.0, rms   4120.0
+fc    250.000, low    222.734, high    280.605 Hz
+fc    250.000, ave -0.0, min -14921.0, max  14688.0, rms   4120.0
+fc    314.980, low    280.689, high    353.531 Hz
+fc    314.980, ave  0.0, min -19823.0, max  19373.0, rms   4120.0
+fc    396.850, low    353.616, high    445.384 Hz
+fc    396.850, ave -0.0, min -17142.0, max  17472.0, rms   4120.0
+fc    500.000, low    445.468, high    561.209 Hz
+fc    500.000, ave -0.0, min -17870.0, max  17860.0, rms   4120.0
+fc    629.961, low    561.293, high    707.063 Hz
+fc    629.961, ave  0.0, min -17518.0, max  17130.0, rms   4120.0
+fc    793.701, low    707.147, high    890.852 Hz
+fc    793.701, ave -0.0, min -17073.0, max  16897.0, rms   4120.0
+fc   1000.000, low    890.936, high   1122.418 Hz
+fc   1000.000, ave -0.0, min -17323.0, max  17343.0, rms   4120.0
+fc   1259.921, low   1122.502, high   1414.210 Hz
+fc   1259.921, ave -0.0, min -17114.0, max  17226.0, rms   4120.0
+fc   1587.401, low   1414.294, high   1781.788 Hz
+fc   1587.401, ave -0.0, min -17935.0, max  18125.0, rms   4120.0
+fc   2000.000, low   1781.873, high   2244.921 Hz
+fc   2000.000, ave  0.0, min -19776.0, max  19924.0, rms   4120.0
+fc   2519.842, low   2245.005, high   2828.420 Hz
+fc   2519.842, ave  0.0, min -18211.0, max  18478.0, rms   4120.0
+fc   3174.802, low   2828.504, high   3563.577 Hz
+fc   3174.802, ave  0.0, min -18007.0, max  18240.0, rms   4120.0
+fc   4000.000, low   3563.661, high   4489.841 Hz
+fc   4000.000, ave -0.0, min -19414.0, max  19422.0, rms   4120.0
+fc   5039.684, low   4489.925, high   5656.840 Hz
+fc   5039.684, ave -0.0, min -18709.0, max  18854.0, rms   4120.0
+fc   6349.604, low   5656.924, high   7127.154 Hz
+fc   6349.604, ave -0.0, min -20102.0, max  18695.0, rms   4120.0
+fc   8000.000, low   7127.238, high   8979.682 Hz
+fc   8000.000, ave -0.0, min -18607.0, max  18940.0, rms   4120.0
+fc  10079.368, low   8979.766, high  11313.680 Hz
+fc  10079.368, ave -0.0, min -19132.0, max  19489.0, rms   4120.0
+fc  12699.208, low  11313.764, high  14254.308 Hz
+fc  12699.208, ave  0.0, min -18131.0, max  18426.0, rms   4120.0
+fc  16000.000, low  14254.392, high  17959.364 Hz
+fc  16000.000, ave  0.0, min -18936.0, max  19212.0, rms   4120.0
+fc  20158.737, low  17959.448, high  22050.000 Hz
+fc  20158.737, ave -0.0, min -18621.0, max  19649.0, rms   4120.0
+36376832 audio bytes written to file.

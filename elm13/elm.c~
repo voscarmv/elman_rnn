@@ -1,0 +1,32 @@
+#include <stdio.h>
+
+typedef struct weight Weight, *WeightPtr;
+
+typedef struct neuron{
+	int
+		value,
+		neighbors
+	;
+	WeightPtr weights;
+} Neuron, *NeuronPtr;
+
+struct weight{
+	int value;
+	NeuronPtr neighbor;
+};
+
+typedef struct layer{
+	int length;
+	NeuronPtr neurons;
+} Layer, *LayerPtr;
+
+typedef struct srn{
+	int length;
+	LayerPtr layers;
+	int *proporder[2];
+} Srn, *SrnPtr;
+
+int main(){
+	
+	return 0;
+}
