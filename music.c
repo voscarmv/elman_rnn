@@ -19,6 +19,10 @@ int borrar(NodoPtr net, int capas, int cuantos);
 int borrasums(NodoPtr *net, int capas, int cuantos);
 
 int pulsar(NodoPtr net, int entrada, int capas, int cuantos, int capa_salida);
+// falta hacer que pulsar() entreque el resultado de la sum de la primer neurona de la capa_salida-esima capa
+
+// todo: write feedback function to connect one of the layers from the memory region to a layer from the input region
+// feedback(net, inputlayer, memorylayer);
 
 int main(){
 	int cuantos = 2;
@@ -57,7 +61,7 @@ int printnet(NodoPtr *net, int capas, int cuantos){
 				for(m=0;m<cuantos;m++){
 					for(p=0;p<cuantos;p++){
 						printf("sum %d peso %d\n", net[m]->sum, net[m]->pesos[p]);
-						net[m]->vecinos[p]->sum += net[m]->sum * net[m]->pesos[p];
+//						net[m]->vecinos[p]->sum += net[m]->sum * net[m]->pesos[p];
 					}
 				}	
 
@@ -67,7 +71,7 @@ int printnet(NodoPtr *net, int capas, int cuantos){
 	} else {
 		for(m=0;m<cuantos;m++){
 			printf("sum %d peso ultimo %d\n", net[m]->sum, net[m]->pesos[0]);
-			net[m]->vecinos[0]->sum += net[m]->sum * net[m]->pesos[0];
+//			net[m]->vecinos[0]->sum += net[m]->sum * net[m]->pesos[0];
 		}
 		printf("Salida de la red: %d\n", net[0]->vecinos[0]->sum);
 	}
