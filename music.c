@@ -2,6 +2,8 @@
 #include <stdlib.h>
 
 #define MAXSAMPLES 5000
+#define RANDRANGE 20
+#define NEUROOUTRANGE 10
 
 typedef struct nodo{
 	int sum;
@@ -16,7 +18,7 @@ NodoPtr nodalloc(int cuantos, int capas);
 
 typedef struct dataset{
 	int dataset_l;
-	double **dataset;
+	int **dataset;
 } Dataset, *DatasetPtr;
 
 DatasetPtr datalloc(int io_l);
@@ -33,6 +35,8 @@ int netoutput(NodoPtr net, int capa);
 NodoPtr netcapa(NodoPtr net, int capa);
 int feedback(NodoPtr net, int capa_entrada, int capa_memoria, int capas, int cuantos);
 
+int randopes();
+
 // Hay que darle rango de [255,-255] a rand() para las dendritas y promediar net->sum / cuantos, y alimentar una onda senoidal para hacer
 // un entrenamiento de prueba con un algoritmo avaro.
 
@@ -46,13 +50,14 @@ int feedback(NodoPtr net, int capa_entrada, int capa_memoria, int capas, int cua
 //
 
 int main(){
-	int cuantos = 2;
+	int cuantos = 5;
 	int capas = 6;
 
 	int input = 1;
 	int output = 1;
 
-	DatasetPtr data = datalloc(input + output);
+//	DatasetPtr data = datalloc(input + output);
+	DatasetPtr data = datalloc(1);
 
 	NodoPtr red = nodalloc(cuantos,capas);
 
@@ -90,12 +95,26 @@ int main(){
 
 
 
-	printf("Outputs \n%d\n%d\n%d\n", red->sum, red->vecinos[0]->sum, red->vecinos[0]->vecinos[0]->sum);
+	printf(
+		"Outputs \n%d\n%d\n%d\n%d\n", 
+		red->sum, 
+		red->vecinos[0]->sum, 
+		red->vecinos[0]->vecinos[0]->sum, 
+		red->vecinos[0]->vecinos[0]->vecinos[0]->sum
+	);
 
-	for(i=0;i<data->dataset_l;i++){
-		printf("%lf, %lf\n",data->dataset[i][0],data->dataset[i][1]);
+	for(i=0;i<data->dataset_l;i++)
+		printf("%d\n",data->dataset[i][0]);
+
+	borrar(red, capas, cuantos);
+	int salida = pulsar(red, data->dataset[0][0], capas, cuantos, 3);
+	feedback(red, 4, 5, capas, cuantos);
+
+	for(i=1;i<data->dataset_l;i++){
+		printf("Red: %d, Data: %d\n", salida, data->dataset[i][0]);
+		salida = pulsar(red, salida, capas, cuantos, 3);
+		feedback(red, 4, 5, capas, cuantos);
 	}
-
 
 	return 0;
 }
@@ -108,18 +127,18 @@ DatasetPtr datalloc(int io_l){
 		j = 0
 	;
 
-	double **dataset = (double **) malloc(sizeof(double *));
-	dataset[0] = (double *) malloc(sizeof(double) * io_l);
+	int **dataset = (int **) malloc(sizeof(int *));
+	dataset[0] = (int *) malloc(sizeof(int) * io_l);
 
 	while(
 		scanf(
-			"%lf",
+			"%d",
 			&(dataset[i][j++])
 		) != EOF && i < MAXSAMPLES
 	){
 		if(j > io_l - 1){
-			dataset = realloc(dataset, sizeof(double *) * ((++i) + 1));
-			dataset[i] = malloc(sizeof(double) * io_l);
+			dataset = realloc(dataset, sizeof(int *) * ((++i) + 1));
+			dataset[i] = malloc(sizeof(int) * io_l);
 			j = 0;
 		}
 	}
@@ -178,7 +197,7 @@ NodoPtr malla(NodoPtr *net, int capas, int cuantos){
 			
 		for(j=0;j<cuantos;j++){
 			net2[j]->vecinos[0] = out;
-			net2[j]->pesos[0] = rand();
+			net2[j]->pesos[0] = randopes();
 		}
 
 
@@ -204,7 +223,7 @@ NodoPtr malla(NodoPtr *net, int capas, int cuantos){
 
 		for(j=0;j<cuantos;j++)
 			for(int n = 0; n < cuantos ; n ++)
-				net2[j]->pesos[n] = rand();
+				net2[j]->pesos[n] = randopes();
 	
 		for(j=0;j<cuantos;j++)
 			for(m=0;m<cuantos;m++)
@@ -237,14 +256,14 @@ NodoPtr nodalloc(int cuantos, int capas){
 
 	for(j=0;j<cuantos;j++)
 		for(k=0;k<cuantos;k++)
-			nodarray[j]->pesos[k] = rand();
+			nodarray[j]->pesos[k] = randopes();
 
 	net->vecinos = nodarray;
 	net->pesos = pesosarray;
 
 
 	for(j=0;j<cuantos;j++)
-		net->pesos[j] = rand();
+		net->pesos[j] = randopes();
 
 	for(j=0;j<cuantos;j++)
 		net->vecinos[j]->sum += net->sum * net->pesos[j];
@@ -264,7 +283,7 @@ int pulsar(NodoPtr net, int entrada, int capas, int cuantos, int capa_salida){
 	net->sum = entrada;
 
 	for(j=0;j<cuantos;j++)
-		net->vecinos[j]->sum += net->sum * net->pesos[j];
+		net->vecinos[j]->sum = net->sum * net->pesos[j];
 
 	 propaganet(net->vecinos, capas, cuantos);
 
@@ -292,9 +311,17 @@ int feedback(NodoPtr net, int capa_entrada, int capa_memoria, int capas, int cua
 
 	int i,j,k;
 
+//	for(i=0;i<cuantos;i++)
+//		capa_in->vecinos[i]->sum *= cuantos;
+
 	for(i=0;i<cuantos;i++)
 		for(j=0;j<cuantos;j++)
 			capa_in->vecinos[i]->sum += capa_mem->vecinos[j]->pesos[0] * capa_mem->vecinos[j]->sum;
+
+	for(i=0;i<cuantos;i++)
+		capa_in->vecinos[i]->sum %= NEUROOUTRANGE;
+//		capa_in->vecinos[i]->sum /= (cuantos * 2);
+
 	
 	return 0;
 }
@@ -302,21 +329,16 @@ int feedback(NodoPtr net, int capa_entrada, int capa_memoria, int capas, int cua
 int propaganet(NodoPtr *net, int capas, int cuantos){
 	int i,j,k,m,p;
 	if(net[0]->vecinos[0]->vecinos != NULL){
-				for(m=0;m<cuantos;m++){
-					for(p=0;p<cuantos;p++){
-						//printf("peso %d\n", net[m]->pesos[p]);
-						net[m]->vecinos[p]->sum += net[m]->sum * net[m]->pesos[p];
-					}
-					//printf("\n");
-				}	
-
+		for(m=0;m<cuantos;m++)
+			for(p=0;p<cuantos;p++)
+				net[m]->vecinos[p]->sum += net[m]->sum * net[m]->pesos[p];
+		for(m=0;m<cuantos;m++)
+			net[0]->vecinos[m]->sum %= NEUROOUTRANGE;
+//			net[0]->vecinos[m]->sum /= cuantos;
 		propaganet(net[0]->vecinos, capas, cuantos);
 	} else {
-		for(m=0;m<cuantos;m++){
-			//printf("peso ultimo %d\n", net[m]->pesos[0]);
+		for(m=0;m<cuantos;m++)
 			net[m]->vecinos[0]->sum += net[m]->sum * net[m]->pesos[0];
-		}
-		//printf("Salidurria: %d\n", net[0]->vecinos[0]->sum);
 	}
 	return 0;
 }
@@ -359,4 +381,7 @@ int borrasums(NodoPtr *net, int capas, int cuantos){
 	return 0;
 }
 
-
+int randopes(){
+	int range = RANDRANGE;
+	return rand() % (range * 2) - range;
+}
