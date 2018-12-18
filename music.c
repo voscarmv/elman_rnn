@@ -2,7 +2,7 @@
 #include <stdlib.h>
 
 #define MAXSAMPLES 5000
-#define RANDRANGE 20
+#define RANDRANGE 1000
 #define NEUROOUTRANGE 10
 
 typedef struct nodo{
@@ -40,25 +40,56 @@ int feedback(NodoPtr net, int capa_entrada, int capa_memoria, int capas, int cua
 
 int randopes();
 
-// Hay que darle rango de [255,-255] a rand() para las dendritas y promediar net->sum / cuantos, y alimentar una onda senoidal para hacer
-// un entrenamiento de prueba con un algoritmo avaro.
+// La red ya tiene un rango flexible. Se asigna en NEUROOUTRANGE
+// El rango permitido para los pesos de las dendritas es RANDRANGE
+// El maximo de datos para el dataset de entrada es MAXSAMPLES
 
-// Despues de eso sigue construir el algoritmo genetico. Se me ocurre que para cada dendrita de un hijo de dos redes A y B
-// existan 4 posibilidades. Que la dendrita del hijo termine siendo al azar cualquiera de:
-// 	1 dendrita de progenitor A
-//	2 dendrita del progenitor B
-//	3 mezcla de ambas dendritas (binaria? proedio?)
-//	4 nueva dendrita
-// Esto para discretizar y para simular un proceso de reproduccion sexual.
-//
+// El codigo actual entrega una lista de fitnesses de 10000 redes neuronales.
+// Falta:
+//	1 Escribir la funcion copynet para poder generar un set de redes hijas
+//	2 Escribir la funcion sexnet para combinar dos redes progenitoras
+//	3 Portar el qsort de elmanx.c aqui para ordenar a las redes hijas de acuerdo a su fitness
+
+/*
+
+qsort(nets, population, sizeof(nets[0]), comparenets);
+
+int comparenets(const void *net1, const void *net2){
+	ElmanPtr *n1 = (ElmanPtr *) net1;
+	ElmanPtr *n2 = (ElmanPtr *) net2;
+	double a = (*n1)->fitness;
+	double b = (*n2)->fitness;
+	if(a > b)
+		return -1;
+	else if(a < b)
+		return 1;
+	else
+		return 0;
+}
+
+*/
 
 int main(){
 
 	int i,j;
 
-	int cuantos = 5;
-	int capas = 6;
-	int poblacion = 100;
+	int cuantos = 18;
+	int capas = 10;
+	int capa_salida = 5;
+
+	int capa_entrada = 3;
+	int capa_memoria = 9;
+
+	if(capa_salida > capas)
+		return 1;
+	if(capa_entrada > capa_salida)
+		return 2;
+	if(capa_memoria > capa)
+		return 3;
+	if(capa_memoria <= capa_entrada)
+		return 4;
+
+	int poblacion = 10000;
 
 	int input = 1;
 	int output = 1;
@@ -77,8 +108,8 @@ int main(){
 	for(i=0;i<poblacion;i++){
 
 		borrar(redes[i], capas, cuantos);
-		int salida = pulsar(redes[i], data->dataset[0][0], capas, cuantos, 3);
-		feedback(redes[i], 4, 5, capas, cuantos);
+		int salida = pulsar(redes[i], data->dataset[0][0], capas, cuantos, capa_salida);
+		feedback(redes[i], capa_entrada, capa_memoria, capas, cuantos);
 
 		int fitness = 0;
 
@@ -88,8 +119,8 @@ int main(){
 			if(distancia < 0)
 				distancia *= -1;
 			fitness += distancia;
-			salida = pulsar(redes[i], salida, capas, cuantos, 3);
-			feedback(redes[i], 4, 5, capas, cuantos);
+			salida = pulsar(redes[i], salida, capas, cuantos, capa_salida);
+			feedback(redes[i], capa_entrada, capa_memoria, capas, cuantos);
 		}
 		printf("%d\n", fitness);
 	}
