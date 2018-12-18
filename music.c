@@ -33,10 +33,16 @@ int netoutput(NodoPtr net, int capa);
 NodoPtr netcapa(NodoPtr net, int capa);
 int feedback(NodoPtr net, int capa_entrada, int capa_memoria, int capas, int cuantos);
 
-// falta hacer que pulsar() entreque el resultado de la sum de la primer neurona de la capa_salida-esima capa
+// Hay que darle rango de [255,-255] a rand() para las dendritas y promediar net->sum / cuantos, y alimentar una onda senoidal para hacer
+// un entrenamiento de prueba con un algoritmo avaro.
 
-// todo: write feedback function to connect one of the layers from the memory region to a layer from the input region
-// feedback(net, inputlayer, memorylayer);
+// Despues de eso sigue construir el algoritmo genetico. Se me ocurre que para cada dendrita de un hijo de dos redes A y B
+// existan 4 posibilidades. Que la dendrita del hijo termine siendo al azar cualquiera de:
+// 	1 dendrita de progenitor A
+//	2 dendrita del progenitor B
+//	3 mezcla de ambas dendritas (binaria? proedio?)
+//	4 nueva dendrita
+// Esto para discretizar y para simular un proceso de reproduccion sexual.
 
 int main(){
 	int cuantos = 2;
