@@ -6,6 +6,7 @@
 #define NEUROOUTRANGE 10
 
 typedef struct nodo{
+	int fitness;
 	int sum;
 	int cuantos;
 	int *pesos;
@@ -52,8 +53,12 @@ int randopes();
 //
 
 int main(){
+
+	int i,j;
+
 	int cuantos = 5;
 	int capas = 6;
+	int poblacion = 100;
 
 	int input = 1;
 	int output = 1;
@@ -61,64 +66,37 @@ int main(){
 //	DatasetPtr data = datalloc(input + output);
 	DatasetPtr data = datalloc(1);
 
-	NodoPtr red = nodalloc(cuantos,capas);
+	NodoPtr *redes = (NodoPtr *) malloc(sizeof(NodoPtr) * poblacion);
 
-	int i;
+	for(i=0;i<poblacion;i++)
+		redes[i] = nodalloc(cuantos,capas);
 
-//	borrasums(red->vecinos, capas, cuantos);
+//	for(i=0;i<data->dataset_l;i++)
+//		printf("%d\n",data->dataset[i][0]);
 
-//printnet(red->vecinos, capas, cuantos);
+	for(i=0;i<poblacion;i++){
 
-//	borrar(red, capas, cuantos);
+		borrar(redes[i], capas, cuantos);
+		int salida = pulsar(redes[i], data->dataset[0][0], capas, cuantos, 3);
+		feedback(redes[i], 4, 5, capas, cuantos);
 
-	printnet(red->vecinos, capas, cuantos);
-	printf("Direct out: %d\n", red->out->sum);
-//	printnet(red->vecinos, capas, cuantos);
-	printf("Borrar\n");
-	borrar(red, capas, cuantos);
+		int fitness = 0;
 
-	printf("Salida caluclada: %d\n", pulsar(red, 5, capas, cuantos, 3));
-	feedback(red, 2, 5, capas, cuantos);
-	printf("Salida caluclada: %d\n", pulsar(red, 5, capas, cuantos, 3));
-
-	printf("Borrar\n");
-	borrar(red, capas, cuantos);
-
-	printf("Salida caluclada: %d\n", pulsar(red, 5, capas, cuantos, 3));
-	feedback(red, 4, 5, capas, cuantos);
-	printf("Salida caluclada: %d\n", pulsar(red, 5, capas, cuantos, 3));
-
-	printf("Borrar\n");
-	borrar(red, capas, cuantos);
-
-	printf("Salida caluclada: %d\n", pulsar(red, 5, capas, cuantos, 3));
-	//feedback(red, 4, 5, capas, cuantos);
-	printf("Salida caluclada: %d\n", pulsar(red, 5, capas, cuantos, 3));
-
-
-
-	printf(
-		"Outputs \n%d\n%d\n%d\n%d\n", 
-		red->sum, 
-		red->vecinos[0]->sum, 
-		red->vecinos[0]->vecinos[0]->sum, 
-		red->vecinos[0]->vecinos[0]->vecinos[0]->sum
-	);
-
-	for(i=0;i<data->dataset_l;i++)
-		printf("%d\n",data->dataset[i][0]);
-
-	borrar(red, capas, cuantos);
-	int salida = pulsar(red, data->dataset[0][0], capas, cuantos, 3);
-	feedback(red, 4, 5, capas, cuantos);
-
-	for(i=1;i<data->dataset_l;i++){
-		printf("Red: %d, Data: %d\n", salida, data->dataset[i][0]);
-		salida = pulsar(red, salida, capas, cuantos, 3);
-		feedback(red, 4, 5, capas, cuantos);
+		for(j=1;j<data->dataset_l;j++){
+//			printf("Red: %d, Data: %d\n", salida, data->dataset[j][0]);
+			int distancia = salida - data->dataset[j][0];
+			if(distancia < 0)
+				distancia *= -1;
+			fitness += distancia;
+			salida = pulsar(redes[i], salida, capas, cuantos, 3);
+			feedback(redes[i], 4, 5, capas, cuantos);
+		}
+		printf("%d\n", fitness);
 	}
 
-	liberared(red, cuantos, capas);
+	for(i=0;i<poblacion;i++)
+		liberared(redes[i], cuantos, capas);
+	free(redes);
 	datfree(data);
 
 	return 0;
@@ -266,14 +244,11 @@ NodoPtr nodalloc(int cuantos, int capas){
 	net->vecinos = nodarray;
 	net->pesos = pesosarray;
 
-
 	for(j=0;j<cuantos;j++)
 		net->pesos[j] = randopes();
 
 	for(j=0;j<cuantos;j++)
 		net->vecinos[j]->sum += net->sum * net->pesos[j];
-
-
 
 	NodoPtr out = malla( net->vecinos, capas, cuantos);
 
