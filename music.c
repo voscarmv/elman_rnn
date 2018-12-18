@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define MAXSAMPLES 5000
 
 typedef struct nodo{
 	int sum;
@@ -12,6 +13,14 @@ typedef struct nodo{
 
 NodoPtr nodalloc(int cuantos, int capas);
 //void nodfree(NodPtr net);
+
+typedef struct dataset{
+	int dataset_l;
+	double **dataset;
+} Dataset, *DatasetPtr;
+
+DatasetPtr datalloc(int io_l);
+
 int printnet(NodoPtr *net, int capas, int cuantos);
 int propaganet(NodoPtr *net, int capas, int cuantos);
 
@@ -19,6 +28,11 @@ int borrar(NodoPtr net, int capas, int cuantos);
 int borrasums(NodoPtr *net, int capas, int cuantos);
 
 int pulsar(NodoPtr net, int entrada, int capas, int cuantos, int capa_salida);
+int netoutput(NodoPtr net, int capa);
+
+NodoPtr netcapa(NodoPtr net, int capa);
+int feedback(NodoPtr net, int capa_entrada, int capa_memoria, int capas, int cuantos);
+
 // falta hacer que pulsar() entreque el resultado de la sum de la primer neurona de la capa_salida-esima capa
 
 // todo: write feedback function to connect one of the layers from the memory region to a layer from the input region
@@ -26,7 +40,13 @@ int pulsar(NodoPtr net, int entrada, int capas, int cuantos, int capa_salida);
 
 int main(){
 	int cuantos = 2;
-	int capas = 4;
+	int capas = 6;
+
+	int input = 1;
+	int output = 1;
+
+	DatasetPtr data = datalloc(input + output);
+
 	NodoPtr red = nodalloc(cuantos,capas);
 
 	int i;
@@ -40,18 +60,70 @@ int main(){
 	printnet(red->vecinos, capas, cuantos);
 	printf("Direct out: %d\n", red->out->sum);
 //	printnet(red->vecinos, capas, cuantos);
-
+	printf("Borrar\n");
 	borrar(red, capas, cuantos);
 
-	printf("Salida caluclada: %d\n", pulsar(red, 5, capas, cuantos, 2));
+	printf("Salida caluclada: %d\n", pulsar(red, 5, capas, cuantos, 3));
+	feedback(red, 2, 5, capas, cuantos);
+	printf("Salida caluclada: %d\n", pulsar(red, 5, capas, cuantos, 3));
+
+	printf("Borrar\n");
 	borrar(red, capas, cuantos);
 
-	printf("Salida caluclada: %d\n", pulsar(red, 5, capas, cuantos, 2));
+	printf("Salida caluclada: %d\n", pulsar(red, 5, capas, cuantos, 3));
+	feedback(red, 4, 5, capas, cuantos);
+	printf("Salida caluclada: %d\n", pulsar(red, 5, capas, cuantos, 3));
+
+	printf("Borrar\n");
 	borrar(red, capas, cuantos);
 
-	printf("Salida caluclada: %d\n", pulsar(red, 5, capas, cuantos, 2));
+	printf("Salida caluclada: %d\n", pulsar(red, 5, capas, cuantos, 3));
+	//feedback(red, 4, 5, capas, cuantos);
+	printf("Salida caluclada: %d\n", pulsar(red, 5, capas, cuantos, 3));
+
+
+
+	printf("Outputs \n%d\n%d\n%d\n", red->sum, red->vecinos[0]->sum, red->vecinos[0]->vecinos[0]->sum);
+
+	for(i=0;i<data->dataset_l;i++){
+		printf("%lf, %lf\n",data->dataset[i][0],data->dataset[i][1]);
+	}
+
 
 	return 0;
+}
+
+
+
+DatasetPtr datalloc(int io_l){
+	int
+		i = 0,
+		j = 0
+	;
+
+	double **dataset = (double **) malloc(sizeof(double *));
+	dataset[0] = (double *) malloc(sizeof(double) * io_l);
+
+	while(
+		scanf(
+			"%lf",
+			&(dataset[i][j++])
+		) != EOF && i < MAXSAMPLES
+	){
+		if(j > io_l - 1){
+			dataset = realloc(dataset, sizeof(double *) * ((++i) + 1));
+			dataset[i] = malloc(sizeof(double) * io_l);
+			j = 0;
+		}
+	}
+	int dataset_l = i;
+	free(dataset[dataset_l]);
+
+	DatasetPtr data = (DatasetPtr) malloc(sizeof(Dataset));
+	data->dataset_l = dataset_l;
+	data->dataset = dataset;
+
+	return data;
 }
 
 
@@ -189,7 +261,35 @@ int pulsar(NodoPtr net, int entrada, int capas, int cuantos, int capa_salida){
 
 	 propaganet(net->vecinos, capas, cuantos);
 
-	return net->out->sum;
+	//return net->out->sum;
+	return netoutput(net, capa_salida);
+}
+
+int netoutput(NodoPtr net, int capa){
+	if(capa > 0)
+		return netoutput(net->vecinos[0], --capa);
+	else
+		return net->sum;
+}
+
+NodoPtr netcapa(NodoPtr net, int capa){
+	if(capa > 0)
+		return netcapa(net->vecinos[0], --capa);
+	else
+		return net;
+}
+
+int feedback(NodoPtr net, int capa_entrada, int capa_memoria, int capas, int cuantos){
+	NodoPtr capa_in = netcapa(net, capa_entrada);
+	NodoPtr capa_mem = netcapa(net, capa_memoria);
+
+	int i,j,k;
+
+	for(i=0;i<cuantos;i++)
+		for(j=0;j<cuantos;j++)
+			capa_in->vecinos[i]->sum += capa_mem->vecinos[j]->pesos[0] * capa_mem->vecinos[j]->sum;
+	
+	return 0;
 }
 
 int propaganet(NodoPtr *net, int capas, int cuantos){
