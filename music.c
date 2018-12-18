@@ -43,6 +43,7 @@ int feedback(NodoPtr net, int capa_entrada, int capa_memoria, int capas, int cua
 //	3 mezcla de ambas dendritas (binaria? proedio?)
 //	4 nueva dendrita
 // Esto para discretizar y para simular un proceso de reproduccion sexual.
+//
 
 int main(){
 	int cuantos = 2;
