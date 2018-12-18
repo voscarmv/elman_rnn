@@ -14,7 +14,8 @@ typedef struct nodo{
 } Nodo, *NodoPtr;
 
 NodoPtr nodalloc(int cuantos, int capas);
-//void nodfree(NodPtr net);
+void nodfree(NodoPtr net, int cuantos, int capas);
+void liberared(NodoPtr net, int cuantos, int capas);
 
 typedef struct dataset{
 	int dataset_l;
@@ -22,6 +23,7 @@ typedef struct dataset{
 } Dataset, *DatasetPtr;
 
 DatasetPtr datalloc(int io_l);
+void datfree(DatasetPtr data);
 
 int printnet(NodoPtr *net, int capas, int cuantos);
 int propaganet(NodoPtr *net, int capas, int cuantos);
@@ -115,6 +117,9 @@ int main(){
 		salida = pulsar(red, salida, capas, cuantos, 3);
 		feedback(red, 4, 5, capas, cuantos);
 	}
+
+	liberared(red, cuantos, capas);
+	datfree(data);
 
 	return 0;
 }
@@ -348,35 +353,18 @@ int borrar(NodoPtr net, int capas, int cuantos){
 	for(int j=0;j<cuantos;j++)
 		net->vecinos[j]->sum = 0;
 
-	 borrasums(net->vecinos, capas, cuantos);
-	return 0;
-	
+	borrasums(net->vecinos, capas, cuantos);
+	return 0;	
 }
 
 int borrasums(NodoPtr *net, int capas, int cuantos){
 	int i,j,k,m,p;
 	if(net[0]->vecinos[0]->vecinos != NULL){
-//				for(m=0;m<cuantos;m++){
-
-					for(p=0;p<cuantos;p++){
-//						printf("peso antes %d, ", net[m]->vecinos[p]->sum);
-						net[0]->vecinos[p]->sum = 0;
-//						printf("peso despues %d\n", net[m]->vecinos[p]->sum);
-
-					}
-//				}	
-//					printf("\n-\n");
-
+		for(p=0;p<cuantos;p++)
+		net[0]->vecinos[p]->sum = 0;
 		borrasums(net[0]->vecinos, capas, cuantos);
 	} else {
-//		for(m=0;m<cuantos;m++){
-//			printf("peso ultimo %d,", net[m]->vecinos[0]->sum );
-			net[0]->vecinos[0]->sum = 0;
-//			printf("peso despues %d\n", net[m]->vecinos[0]->sum);
-
-//		}
-//		printf("Donde sssssssssssssssssssssssiria salida de la red\n");
-		//printf("Salida de la red: %d\n", net[0]->vecinos[0]->sum);
+		net[0]->vecinos[0]->sum = 0;
 	}
 	return 0;
 }
@@ -384,4 +372,41 @@ int borrasums(NodoPtr *net, int capas, int cuantos){
 int randopes(){
 	int range = RANDRANGE;
 	return rand() % (range * 2) - range;
+}
+
+void datfree(DatasetPtr data){
+	int i;
+	for(i = 0; i < data->dataset_l; i ++)
+		free(data->dataset[i]);
+	free(data->dataset);
+	free(data);
+	return;
+}
+
+void liberared(NodoPtr net, int cuantos, int capas){
+	nodfree(net, cuantos, capas);
+	free(net->pesos);
+	free(net->vecinos);
+	free(net->out);
+	free(net);
+
+	return;
+}
+
+void nodfree(NodoPtr net, int cuantos, int capas){
+	int i;
+
+	if(capas > 0){
+		nodfree(net->vecinos[0], cuantos, --capas);
+		for(i=0;i<cuantos;i++){
+			free(net->vecinos[i]->pesos);
+			free(net->vecinos[i]->vecinos);
+			free(net->vecinos[i]);
+		}
+	} else {
+		free(net->vecinos[0]->pesos);
+		free(net->vecinos[0]->vecinos);
+		free(net->vecinos[0]);
+	}
+	return;
 }
