@@ -73,12 +73,12 @@ int main(){
 
 	int i,j;
 
-	int cuantos = 18;
-	int capas = 10;
-	int capa_salida = 5;
+	int cuantos = 18; // cantidad de neuronas por cada capa
+	int capas = 10; // cantidad de capas
+	int capa_salida = 5; // capa cuya primer neurona representa la salida
 
-	int capa_entrada = 3;
-	int capa_memoria = 9;
+	int capa_entrada = 3; // capa a donde ingresan los datos de la malla de memoria
+	int capa_memoria = 9; // capa de la que salen los datos de la malla de memoria
 
 	if(capa_salida > capas)
 		return 1;
