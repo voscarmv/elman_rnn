@@ -385,6 +385,12 @@ void datfree(DatasetPtr data){
 
 void liberared(NodoPtr net, int cuantos, int capas){
 	nodfree(net, cuantos, capas);
+	for(int i=0;i<cuantos;i++){
+		free(net->vecinos[i]->pesos);
+		free(net->vecinos[i]->vecinos);
+		free(net->vecinos[i]);
+	}
+
 	free(net->pesos);
 	free(net->vecinos);
 	free(net->out);
