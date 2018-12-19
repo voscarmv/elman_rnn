@@ -23,6 +23,9 @@ typedef struct dataset{
 	int **dataset;
 } Dataset, *DatasetPtr;
 
+NodoPtr netsex(NodoPtr mom, NodoPtr dad, int cuantos, int capas);
+int sex(NodoPtr *hijo, NodoPtr *mom, NodoPtr *dad, int capas, int cuantos);
+
 DatasetPtr datalloc(int io_l);
 void datfree(DatasetPtr data);
 
@@ -50,6 +53,8 @@ int randopes();
 //	2 Escribir la funcion sexnet para combinar dos redes progenitoras
 //	3 Portar el qsort de elmanx.c aqui para ordenar a las redes hijas de acuerdo a su fitness
 
+int comparenets(const void *net1, const void *net2);
+
 /*
 
 qsort(nets, population, sizeof(nets[0]), comparenets);
@@ -69,7 +74,13 @@ int comparenets(const void *net1, const void *net2){
 
 */
 
-int main(){
+int main(int argc, char **argv){
+	if(argc>0){
+		int seed = atoi(argv[1]);
+		printf("seed %d\n",seed);
+
+		srand(seed);
+	}
 
 	int i,j;
 
@@ -84,12 +95,12 @@ int main(){
 		return 1;
 	if(capa_entrada > capa_salida)
 		return 2;
-	if(capa_memoria > capa)
+	if(capa_memoria > capas)
 		return 3;
 	if(capa_memoria <= capa_entrada)
 		return 4;
 
-	int poblacion = 10000;
+	int poblacion = 20;
 
 	int input = 1;
 	int output = 1;
@@ -122,12 +133,88 @@ int main(){
 			salida = pulsar(redes[i], salida, capas, cuantos, capa_salida);
 			feedback(redes[i], capa_entrada, capa_memoria, capas, cuantos);
 		}
-		printf("%d\n", fitness);
+		redes[i]->fitness = fitness;
+//		printf("%d\n", fitness);
 	}
+
+	qsort(redes, poblacion, sizeof(redes[0]), comparenets);
+
+	for(i=0;i<poblacion;i++)
+		printf("%d\n", redes[i]->fitness);
+	printf("---\n");
+
+	
+	NodoPtr *bebes = (NodoPtr *) malloc(sizeof(NodoPtr) * poblacion);
+
+	for(j=0;j<poblacion;j++){
+		int choose_dad = rand() % ((poblacion*(poblacion+1)) / 2);
+		int choose_mom = rand() % ((poblacion*(poblacion+1)) / 2);
+		NodoPtr papa = NULL;
+		NodoPtr mama = NULL;
+
+		int ctaregresiv = 0;
+		for(i=0;i<poblacion;i++){
+			ctaregresiv += poblacion - i;
+//			printf("%d %d %d %d ",redes[i]->fitness, ctaregresiv, choose_dad, choose_mom);
+			if(ctaregresiv > choose_dad){
+//				printf("papa ");
+				papa = redes[i];
+			}
+			if(ctaregresiv > choose_mom){
+//				printf("mama ");
+				mama = redes[i];
+			}
+			if(papa != NULL && mama != NULL)
+				break;
+//			printf("\n");
+		}
+//			printf("\n");
+		bebes[j] = netsex(mama, papa, cuantos, capas);
+	}
+//	printf("%d\n",bebes[1]->pesos[0]);
+//return 0;
+//	for(i=0;i<poblacion;i++)
+//		liberared(redes[i], cuantos, capas);
+//	free(redes);
+
+//	redes = bebes;
+
+	for(i=0;i<poblacion;i++){
+
+		borrar(bebes[i], capas, cuantos);
+		int salida = pulsar(bebes[i], data->dataset[0][0], capas, cuantos, capa_salida);
+		feedback(bebes[i], capa_entrada, capa_memoria, capas, cuantos);
+
+		int fitness = 0;
+
+		for(j=1;j<data->dataset_l;j++){
+//			printf("Red: %d, Data: %d\n", salida, data->dataset[j][0]);
+			int distancia = salida - data->dataset[j][0];
+			if(distancia < 0)
+				distancia *= -1;
+			fitness += distancia;
+			salida = pulsar(bebes[i], salida, capas, cuantos, capa_salida);
+			feedback(bebes[i], capa_entrada, capa_memoria, capas, cuantos);
+		}
+		bebes[i]->fitness = fitness;
+//		printf("%d\n", fitness);
+	}
+
+	qsort(bebes, poblacion, sizeof(redes[0]), comparenets);
+
+	for(i=0;i<poblacion;i++)
+		printf("%d\n", bebes[i]->fitness);
+	printf("---\n");
+
 
 	for(i=0;i<poblacion;i++)
 		liberared(redes[i], cuantos, capas);
 	free(redes);
+
+	for(i=0;i<poblacion;i++)
+		liberared(bebes[i], cuantos, capas);
+	free(bebes);
+
 	datfree(data);
 
 	return 0;
@@ -416,3 +503,68 @@ void nodfree(NodoPtr net, int cuantos, int capas){
 	}
 	return;
 }
+
+int comparenets(const void *net1, const void *net2){
+	NodoPtr *n1 = (NodoPtr *) net1;
+	NodoPtr *n2 = (NodoPtr *) net2;
+	double a = (*n1)->fitness;
+	double b = (*n2)->fitness;
+	if(a > b)
+		return 1;
+	else if(a < b)
+		return -1;
+	else
+		return 0;
+}
+
+NodoPtr netsex(NodoPtr mom, NodoPtr dad, int cuantos, int capas){
+	NodoPtr hijo = nodalloc(cuantos, capas);
+//	net->sum = 0;
+	for(int j=0;j<cuantos;j++){
+		int god = rand() / 4;
+		if(god == 0)
+			hijo->pesos[j] = randopes();
+		if(god == 1)
+			hijo->pesos[j] = mom->pesos[j];
+		if(god == 2)
+			hijo->pesos[j] = dad->pesos[j];
+		if(god == 3)
+			hijo->pesos[j] = (mom->pesos[j] + dad->pesos[j])/2;
+	}
+
+	sex(hijo->vecinos, mom->vecinos, dad->vecinos, capas, cuantos);
+	return hijo;
+}
+
+int sex(NodoPtr *hijo, NodoPtr *mom, NodoPtr *dad, int capas, int cuantos){
+	int i,j,k,m,p;
+	if(hijo[0]->vecinos[0]->vecinos != NULL){
+		for(i=0;i<cuantos;i++)
+			for(p=0;p<cuantos;p++){
+				int god = rand() / 4;
+				if(god == 0)
+					hijo[i]->pesos[j] = randopes();
+				if(god == 1)
+					hijo[i]->pesos[j] = mom[i]->pesos[j];
+				if(god == 2)
+					hijo[i]->pesos[j] = dad[i]->pesos[j];
+				if(god == 3)
+					hijo[i]->pesos[j] = (mom[i]->pesos[j] + dad[i]->pesos[j])/2;
+			}
+		sex(hijo[0]->vecinos, mom[0]->vecinos, dad[0]->vecinos, capas, cuantos);
+	} else {
+		for(i=0;i<cuantos;i++){
+			int god = rand() / 4;
+			if(god == 0)
+				hijo[i]->pesos[j] = randopes();
+			if(god == 1)
+				hijo[i]->pesos[j] = mom[i]->pesos[j];
+			if(god == 2)
+				hijo[i]->pesos[j] = dad[i]->pesos[j];
+			if(god == 3)
+				hijo[i]->pesos[j] = (mom[i]->pesos[j] + dad[i]->pesos[j])/2;
+		}
+	}
+	return 0;
+}
+
