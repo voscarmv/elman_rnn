@@ -2,8 +2,8 @@
 #include <stdlib.h>
 
 #define MAXSAMPLES 5000
-#define RANDRANGE 1000
-#define NEUROOUTRANGE 10
+#define RANDRANGE 10
+#define NEUROOUTRANGE 20
 
 typedef struct nodo{
 	int fitness;
@@ -25,6 +25,9 @@ typedef struct dataset{
 
 NodoPtr netsex(NodoPtr mom, NodoPtr dad, int cuantos, int capas);
 int sex(NodoPtr *hijo, NodoPtr *mom, NodoPtr *dad, int capas, int cuantos);
+
+NodoPtr netclone(NodoPtr dad, int cuantos, int capas);
+int clon(NodoPtr *hijo, NodoPtr *dad, int capas, int cuantos);
 
 DatasetPtr datalloc(int io_l);
 void datfree(DatasetPtr data);
@@ -84,7 +87,7 @@ int main(int argc, char **argv){
 
 	int i,j;
 
-	int cuantos = 18; // cantidad de neuronas por cada capa
+	int cuantos = 10; // cantidad de neuronas por cada capa
 	int capas = 10; // cantidad de capas
 	int capa_salida = 5; // capa cuya primer neurona representa la salida
 
@@ -100,7 +103,7 @@ int main(int argc, char **argv){
 	if(capa_memoria <= capa_entrada)
 		return 4;
 
-	int poblacion = 20;
+	int poblacion = 500;
 
 	int input = 1;
 	int output = 1;
@@ -115,8 +118,86 @@ int main(int argc, char **argv){
 
 //	for(i=0;i<data->dataset_l;i++)
 //		printf("%d\n",data->dataset[i][0]);
+NodoPtr *bebes;
 
+for(int x=0;x<10000;x++){
 	for(i=0;i<poblacion;i++){
+
+		borrar(redes[i], capas, cuantos);
+		int salida = pulsar(redes[i], data->dataset[0][0], capas, cuantos, capa_salida)+10;
+		feedback(redes[i], capa_entrada, capa_memoria, capas, cuantos);
+
+		int fitness = 0;
+
+		for(j=1;j<data->dataset_l;j++){
+//			printf("Red: %d, Data: %d\n", salida, data->dataset[j][0]);
+			int distancia = salida - data->dataset[j][0];
+			if(distancia < 0)
+				distancia *= -1;
+			fitness += distancia;
+			salida = pulsar(redes[i], salida, capas, cuantos, capa_salida);
+			feedback(redes[i], capa_entrada, capa_memoria, capas, cuantos);
+		}
+		redes[i]->fitness = fitness;
+//		printf("%d\n", fitness);
+	}
+
+	qsort(redes, poblacion, sizeof(redes[0]), comparenets);
+
+//	for(i=0;i<poblacion;i++)
+//		printf("%d\n", redes[i]->fitness);
+		printf("%d: %d\n", x, redes[0]->fitness);
+//	printf("---\n");
+	
+	bebes = (NodoPtr *) malloc(sizeof(NodoPtr) * poblacion);
+
+	for(j=0;j<poblacion;j++){
+		int choose_dad = rand() % ((poblacion*(poblacion+1)) / 2);
+		int choose_mom = rand() % ((poblacion*(poblacion+1)) / 2);
+		NodoPtr papa = NULL;
+		NodoPtr mama = NULL;
+
+		int ctaregresiv = 0;
+		for(i=0;i<poblacion;i++){
+			ctaregresiv += poblacion - i;
+//			printf("%d %d %d %d ",redes[i]->fitness, ctaregresiv, choose_dad, choose_mom);
+			if(ctaregresiv > choose_dad){
+//				printf("papa ");
+				papa = redes[i];
+			}
+			if(ctaregresiv > choose_mom){
+//				printf("mama ");
+				mama = redes[i];
+			}
+			if(papa != NULL && mama != NULL)
+				break;
+//			printf("\n");
+		}
+//			printf("\n");
+//		if(j=0){
+//			bebes[j] = netclone(redes[0], cuantos, capas);
+//		} else { 
+			papa = redes[0]; // el papa siempre va a ser la mejor red
+			bebes[j] = netsex(mama, papa, cuantos, capas);
+//		}
+	}
+//	printf("%d\n",bebes[1]->pesos[0]);
+//return 0;
+
+	for(i = 0; i < poblacion/3; i++){
+		liberared(bebes[i], cuantos, capas);
+		NodoPtr clon = netclone(redes[i], cuantos, capas);
+		bebes[i] = clon;
+	}
+
+	for(i=0;i<poblacion;i++)
+		liberared(redes[i], cuantos, capas);
+	free(redes);
+
+	redes = bebes;
+}
+//////////////////////////////////////////////////////////
+/*	for(i=0;i<poblacion;i++){
 
 		borrar(redes[i], capas, cuantos);
 		int salida = pulsar(redes[i], data->dataset[0][0], capas, cuantos, capa_salida);
@@ -142,74 +223,7 @@ int main(int argc, char **argv){
 	for(i=0;i<poblacion;i++)
 		printf("%d\n", redes[i]->fitness);
 	printf("---\n");
-
-	
-	NodoPtr *bebes = (NodoPtr *) malloc(sizeof(NodoPtr) * poblacion);
-
-	for(j=0;j<poblacion;j++){
-		int choose_dad = rand() % ((poblacion*(poblacion+1)) / 2);
-		int choose_mom = rand() % ((poblacion*(poblacion+1)) / 2);
-		NodoPtr papa = NULL;
-		NodoPtr mama = NULL;
-
-		int ctaregresiv = 0;
-		for(i=0;i<poblacion;i++){
-			ctaregresiv += poblacion - i;
-//			printf("%d %d %d %d ",redes[i]->fitness, ctaregresiv, choose_dad, choose_mom);
-			if(ctaregresiv > choose_dad){
-//				printf("papa ");
-				papa = redes[i];
-			}
-			if(ctaregresiv > choose_mom){
-//				printf("mama ");
-				mama = redes[i];
-			}
-			if(papa != NULL && mama != NULL)
-				break;
-//			printf("\n");
-		}
-//			printf("\n");
-		bebes[j] = netsex(mama, papa, cuantos, capas);
-	}
-//	printf("%d\n",bebes[1]->pesos[0]);
-//return 0;
-//	for(i=0;i<poblacion;i++)
-//		liberared(redes[i], cuantos, capas);
-//	free(redes);
-
-//	redes = bebes;
-
-	for(i=0;i<poblacion;i++){
-
-		borrar(bebes[i], capas, cuantos);
-		int salida = pulsar(bebes[i], data->dataset[0][0], capas, cuantos, capa_salida);
-		feedback(bebes[i], capa_entrada, capa_memoria, capas, cuantos);
-
-		int fitness = 0;
-
-		for(j=1;j<data->dataset_l;j++){
-//			printf("Red: %d, Data: %d\n", salida, data->dataset[j][0]);
-			int distancia = salida - data->dataset[j][0];
-			if(distancia < 0)
-				distancia *= -1;
-			fitness += distancia;
-			salida = pulsar(bebes[i], salida, capas, cuantos, capa_salida);
-			feedback(bebes[i], capa_entrada, capa_memoria, capas, cuantos);
-		}
-		bebes[i]->fitness = fitness;
-//		printf("%d\n", fitness);
-	}
-
-	qsort(bebes, poblacion, sizeof(redes[0]), comparenets);
-
-	for(i=0;i<poblacion;i++)
-		printf("%d\n", bebes[i]->fitness);
-	printf("---\n");
-
-
-	for(i=0;i<poblacion;i++)
-		liberared(redes[i], cuantos, capas);
-	free(redes);
+*/
 
 	for(i=0;i<poblacion;i++)
 		liberared(bebes[i], cuantos, capas);
@@ -540,7 +554,7 @@ int sex(NodoPtr *hijo, NodoPtr *mom, NodoPtr *dad, int capas, int cuantos){
 	int i,j,k,m,p;
 	if(hijo[0]->vecinos[0]->vecinos != NULL){
 		for(i=0;i<cuantos;i++)
-			for(p=0;p<cuantos;p++){
+			for(j=0;j<cuantos;j++){
 				int god = rand() / 4;
 				if(god == 0)
 					hijo[i]->pesos[j] = randopes();
@@ -556,13 +570,40 @@ int sex(NodoPtr *hijo, NodoPtr *mom, NodoPtr *dad, int capas, int cuantos){
 		for(i=0;i<cuantos;i++){
 			int god = rand() / 4;
 			if(god == 0)
-				hijo[i]->pesos[j] = randopes();
+				hijo[i]->pesos[0] = randopes();
 			if(god == 1)
-				hijo[i]->pesos[j] = mom[i]->pesos[j];
+				hijo[i]->pesos[0] = mom[i]->pesos[0];
 			if(god == 2)
-				hijo[i]->pesos[j] = dad[i]->pesos[j];
+				hijo[i]->pesos[0] = dad[i]->pesos[0];
 			if(god == 3)
-				hijo[i]->pesos[j] = (mom[i]->pesos[j] + dad[i]->pesos[j])/2;
+				hijo[i]->pesos[0] = (mom[i]->pesos[0] + dad[i]->pesos[0])/2;
+		}
+	}
+	return 0;
+}
+
+NodoPtr netclone(NodoPtr dad, int cuantos, int capas){
+	NodoPtr hijo = nodalloc(cuantos, capas);
+//	net->sum = 0;
+	for(int j=0;j<cuantos;j++){
+		hijo->pesos[j] = dad->pesos[j];
+	}
+
+	clon(hijo->vecinos, dad->vecinos, capas, cuantos);
+	return hijo;
+}
+
+int clon(NodoPtr *hijo, NodoPtr *dad, int capas, int cuantos){
+	int i,j,k,m,p;
+	if(hijo[0]->vecinos[0]->vecinos != NULL){
+		for(i=0;i<cuantos;i++)
+			for(p=0;p<cuantos;p++){
+				hijo[i]->pesos[p] = dad[i]->pesos[p];
+			}
+		clon(hijo[0]->vecinos, dad[0]->vecinos, capas, cuantos);
+	} else {
+		for(i=0;i<cuantos;i++){
+			hijo[i]->pesos[0] = dad[i]->pesos[0];
 		}
 	}
 	return 0;
