@@ -2,8 +2,8 @@
 #include <stdlib.h>
 
 #define MAXSAMPLES 5000
-#define RANDRANGE 10
-#define NEUROOUTRANGE 20
+#define RANDRANGE 30
+#define NEUROOUTRANGE 10
 
 typedef struct nodo{
 	int fitness;
@@ -119,6 +119,7 @@ int main(int argc, char **argv){
 //	for(i=0;i<data->dataset_l;i++)
 //		printf("%d\n",data->dataset[i][0]);
 NodoPtr *bebes;
+int bestanterior = -1;
 
 for(int x=0;x<10000;x++){
 	for(i=0;i<poblacion;i++){
@@ -135,7 +136,7 @@ for(int x=0;x<10000;x++){
 			if(distancia < 0)
 				distancia *= -1;
 			fitness += distancia;
-			salida = pulsar(redes[i], salida, capas, cuantos, capa_salida);
+			salida = pulsar(redes[i], salida, capas, cuantos, capa_salida)+10;
 			feedback(redes[i], capa_entrada, capa_memoria, capas, cuantos);
 		}
 		redes[i]->fitness = fitness;
@@ -143,6 +144,21 @@ for(int x=0;x<10000;x++){
 	}
 
 	qsort(redes, poblacion, sizeof(redes[0]), comparenets);
+
+	if(bestanterior == -1)
+		bestanterior = redes[0]->fitness;
+	if(redes[0]->fitness < bestanterior){
+		borrar(redes[0], capas, cuantos);
+		int salida = pulsar(redes[0], data->dataset[0][0], capas, cuantos, capa_salida)+10;
+		feedback(redes[0], capa_entrada, capa_memoria, capas, cuantos);
+
+		for(j=1;j<data->dataset_l;j++){
+			printf("Red: %d, Data: %d\n", salida, data->dataset[j][0]);
+			salida = pulsar(redes[0], salida, capas, cuantos, capa_salida)+10;
+			feedback(redes[0], capa_entrada, capa_memoria, capas, cuantos);
+		}
+		bestanterior = redes[0]->fitness;
+	}
 
 //	for(i=0;i<poblacion;i++)
 //		printf("%d\n", redes[i]->fitness);
@@ -195,6 +211,9 @@ for(int x=0;x<10000;x++){
 	free(redes);
 
 	redes = bebes;
+
+		fflush(NULL);
+
 }
 //////////////////////////////////////////////////////////
 /*	for(i=0;i<poblacion;i++){
