@@ -5,6 +5,49 @@
 #define RANDRANGE 30
 #define NEUROOUTRANGE 10
 
+/*
+
+BIG MEMORY LEAK
+
+==1808== 
+==1808== HEAP SUMMARY:
+==1808==     in use at exit: 60 bytes in 4 blocks
+==1808==   total heap usage: 55 allocs, 51 frees, 7,124 bytes allocated
+==1808== 
+==1808== Searching for pointers to 4 not-freed blocks
+==1808== Checked 69,376 bytes
+==1808== 
+==1808== 4 bytes in 1 blocks are definitely lost in loss record 1 of 4
+==1808==    at 0x4C2BBAF: malloc (vg_replace_malloc.c:299)
+==1808==    by 0x108DF3: malla (music.c:442)
+==1808==    by 0x10936A: nodalloc (music.c:525)
+==1808==    by 0x108A05: main (music.c:160)
+==1808== 
+==1808== 8 bytes in 1 blocks are definitely lost in loss record 2 of 4
+==1808==    at 0x4C2BBAF: malloc (vg_replace_malloc.c:299)
+==1808==    by 0x108DA9: malla (music.c:437)
+==1808==    by 0x10936A: nodalloc (music.c:525)
+==1808==    by 0x108A05: main (music.c:160)
+==1808== 
+==1808== 48 (8 direct, 40 indirect) bytes in 1 blocks are definitely lost in loss record 4 of 4
+==1808==    at 0x4C2BBAF: malloc (vg_replace_malloc.c:299)
+==1808==    by 0x108DE5: malla (music.c:441)
+==1808==    by 0x10936A: nodalloc (music.c:525)
+==1808==    by 0x108A05: main (music.c:160)
+==1808== 
+==1808== LEAK SUMMARY:
+==1808==    definitely lost: 20 bytes in 3 blocks
+==1808==    indirectly lost: 40 bytes in 1 blocks
+==1808==      possibly lost: 0 bytes in 0 blocks
+==1808==    still reachable: 0 bytes in 0 blocks
+==1808==         suppressed: 0 bytes in 0 blocks
+==1808== 
+==1808== ERROR SUMMARY: 3 errors from 3 contexts (suppressed: 0 from 0)
+==1808== ERROR SUMMARY: 3 errors from 3 contexts (suppressed: 0 from 0)
+
+
+*/
+
 typedef struct nodo{
 	int fitness;
 	int sum;
@@ -111,17 +154,95 @@ int main(int argc, char **argv){
 //	DatasetPtr data = datalloc(input + output);
 	DatasetPtr data = datalloc(1);
 
-	NodoPtr *redes = (NodoPtr *) malloc(sizeof(NodoPtr) * poblacion);
+////	NodoPtr *redes = (NodoPtr *) malloc(sizeof(NodoPtr) * poblacion);
+	NodoPtr *redes = (NodoPtr *) malloc(sizeof(NodoPtr) * 3);
 
-	for(i=0;i<poblacion;i++)
-		redes[i] = nodalloc(cuantos,capas);
+	redes[0] = nodalloc(1,1);
 
+	free(redes[0]->vecinos[0]->vecinos[0]);
+	free(redes[0]->vecinos[0]->vecinos);
+	free(redes[0]->vecinos[0]->pesos);
+	free(redes[0]->vecinos[0]);
+	free(redes[0]->vecinos);
+	free(redes[0]->pesos);
+	
+	free(redes[0]);
+
+	free(redes);
+
+	datfree(data);	
+
+	return 0;
+
+
+	redes[0] = (NodoPtr) malloc(sizeof(Nodo));
+
+	struct nodo **vecs = (NodoPtr *) malloc(sizeof(NodoPtr) * 2);
+	redes[0]->vecinos = vecs;
+
+
+//NodoPtr *nodarray2 = (NodoPtr *) malloc(sizeof(NodoPtr) * cuantos);
+
+	free(redes[0]->vecinos);
+
+//redes[0]->vecinos = nodarray2;
+//	free(redes[0]->vecinos);
+
+
+	//free(nodarray2);
+
+	int *pesosarray = (int *) malloc(sizeof(int) * 1);
+	redes[0]->pesos = pesosarray;
+
+	free(redes[0]->pesos);
+
+
+
+	free(redes[0]);
+
+
+//	for(i=0;i<poblacion;i++)
+//		redes[i] = nodalloc(cuantos,capas);
+
+//	for(i=0;i<poblacion;i++)
+//		liberared(redes[i], cuantos, capas);
+
+//	redes[0] = nodalloc(2,2);
+//	redes[1] = nodalloc(3,3);
+
+
+//	free(redes[0]->vecinos[0]->vecinos[0]->vecinos);
+//	free(redes[0]->vecinos[1]->vecinos[0]->pesos);
+
+//	free(redes[0]->vecinos[0]->pesos);
+//	free(redes[0]->vecinos[1]->pesos);
+
+
+//	free(redes[0]->vecinos[0]->vecinos);
+//	free(redes[0]->vecinos[1]->vecinos);
+
+//	free(redes[0]->vecinos[0]->pesos);
+//	free(redes[0]->vecinos[1]->pesos);
+
+//	free(redes[0]->vecinos);
+//	free(redes[0]->pesos);
+
+	free(redes);
+
+	datfree(data);
+
+//	for(i=0;i<poblacion;i++)
+//		liberared(redes[i], cuantos, capas);
+//	free(redes);
+
+	
+return 0;
 //	for(i=0;i<data->dataset_l;i++)
 //		printf("%d\n",data->dataset[i][0]);
 NodoPtr *bebes;
 int bestanterior = -1;
 
-for(int x=0;x<10000;x++){
+for(int x=0;x<5;x++){
 	for(i=0;i<poblacion;i++){
 
 		borrar(redes[i], capas, cuantos);
@@ -554,7 +675,7 @@ NodoPtr netsex(NodoPtr mom, NodoPtr dad, int cuantos, int capas){
 	NodoPtr hijo = nodalloc(cuantos, capas);
 //	net->sum = 0;
 	for(int j=0;j<cuantos;j++){
-		int god = rand() / 4;
+		int god = rand() % 4;
 		if(god == 0)
 			hijo->pesos[j] = randopes();
 		if(god == 1)
@@ -574,7 +695,7 @@ int sex(NodoPtr *hijo, NodoPtr *mom, NodoPtr *dad, int capas, int cuantos){
 	if(hijo[0]->vecinos[0]->vecinos != NULL){
 		for(i=0;i<cuantos;i++)
 			for(j=0;j<cuantos;j++){
-				int god = rand() / 4;
+				int god = rand() % 4;
 				if(god == 0)
 					hijo[i]->pesos[j] = randopes();
 				if(god == 1)
@@ -587,7 +708,7 @@ int sex(NodoPtr *hijo, NodoPtr *mom, NodoPtr *dad, int capas, int cuantos){
 		sex(hijo[0]->vecinos, mom[0]->vecinos, dad[0]->vecinos, capas, cuantos);
 	} else {
 		for(i=0;i<cuantos;i++){
-			int god = rand() / 4;
+			int god = rand() % 4;
 			if(god == 0)
 				hijo[i]->pesos[0] = randopes();
 			if(god == 1)
