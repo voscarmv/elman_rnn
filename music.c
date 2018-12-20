@@ -157,15 +157,32 @@ int main(int argc, char **argv){
 ////	NodoPtr *redes = (NodoPtr *) malloc(sizeof(NodoPtr) * poblacion);
 	NodoPtr *redes = (NodoPtr *) malloc(sizeof(NodoPtr) * 3);
 
+
+
 	redes[0] = nodalloc(1,1);
 
-	free(redes[0]->vecinos[0]->vecinos[0]);
-	free(redes[0]->vecinos[0]->vecinos);
-	free(redes[0]->vecinos[0]->pesos);
-	free(redes[0]->vecinos[0]);
-	free(redes[0]->vecinos);
-	free(redes[0]->pesos);
+//	free(redes[0]->vecinos[0]->vecinos[0]);
+//	free(redes[0]->vecinos[0]->vecinos[0]->vecinos[0]->vecinos[0]);
+
+	   //redes[0]->vecinos[0]->vecinos[0]->vecinos[0]->sum);
+
+//	free(redes[0]->vecinos[0]->vecinos[0]->vecinos[0]->pesos);
+//	free(redes[0]->vecinos[0]->vecinos[0]->vecinos[0]->vecinos);
+//	free(redes[0]->vecinos[0]->vecinos[0]->vecinos[0]);
+
+//	free(redes[0]->vecinos[0]->vecinos[0]->pesos);
+//	free(redes[0]->vecinos[0]->vecinos[0]->vecinos);
+//	free(redes[0]->vecinos[0]->vecinos[0]);
+
+//	free(redes[0]->vecinos[0]->pesos);
+//	free(redes[0]->vecinos[0]->vecinos);
+//	free(redes[0]->vecinos[0]);
+
+//	free(redes[0]->pesos);
+//	free(redes[0]->vecinos);
+//	free(redes[0]->out);
 	
+		liberared(redes[0], 1, 1);
 	free(redes[0]);
 
 	free(redes);
@@ -175,15 +192,15 @@ int main(int argc, char **argv){
 	return 0;
 
 
-	redes[0] = (NodoPtr) malloc(sizeof(Nodo));
+//	redes[0] = (NodoPtr) malloc(sizeof(Nodo));
 
-	struct nodo **vecs = (NodoPtr *) malloc(sizeof(NodoPtr) * 2);
-	redes[0]->vecinos = vecs;
+//	struct nodo **vecs = (NodoPtr *) malloc(sizeof(NodoPtr) * 2);
+//	redes[0]->vecinos = vecs;
 
 
 //NodoPtr *nodarray2 = (NodoPtr *) malloc(sizeof(NodoPtr) * cuantos);
 
-	free(redes[0]->vecinos);
+//	free(redes[0]->vecinos);
 
 //redes[0]->vecinos = nodarray2;
 //	free(redes[0]->vecinos);
@@ -191,18 +208,18 @@ int main(int argc, char **argv){
 
 	//free(nodarray2);
 
-	int *pesosarray = (int *) malloc(sizeof(int) * 1);
-	redes[0]->pesos = pesosarray;
+//	int *pesosarray = (int *) malloc(sizeof(int) * 1);
+//	redes[0]->pesos = pesosarray;
 
-	free(redes[0]->pesos);
-
-
-
-	free(redes[0]);
+//	free(redes[0]->pesos);
 
 
-//	for(i=0;i<poblacion;i++)
-//		redes[i] = nodalloc(cuantos,capas);
+
+//	free(redes[0]);
+
+
+	for(i=0;i<poblacion;i++)
+		redes[i] = nodalloc(cuantos,capas);
 
 //	for(i=0;i<poblacion;i++)
 //		liberared(redes[i], cuantos, capas);
@@ -227,16 +244,16 @@ int main(int argc, char **argv){
 //	free(redes[0]->vecinos);
 //	free(redes[0]->pesos);
 
-	free(redes);
+//	free(redes);
 
-	datfree(data);
+//	datfree(data);
 
 //	for(i=0;i<poblacion;i++)
 //		liberared(redes[i], cuantos, capas);
 //	free(redes);
 
 	
-return 0;
+//return 0;
 //	for(i=0;i<data->dataset_l;i++)
 //		printf("%d\n",data->dataset[i][0]);
 NodoPtr *bebes;
@@ -434,7 +451,9 @@ int printnet(NodoPtr *net, int capas, int cuantos){
 NodoPtr malla(NodoPtr *net, int capas, int cuantos){
 	int i,j,k,m;
 	if(--capas==0){
+
 		NodoPtr *net2 = (NodoPtr *) malloc(sizeof(NodoPtr) * cuantos);
+
 		for(j=0;j<cuantos;j++){
 			net2[j] = (NodoPtr) malloc(sizeof(Nodo));
 
@@ -445,21 +464,23 @@ NodoPtr malla(NodoPtr *net, int capas, int cuantos){
 			net2[j]->pesos = pesosarray3;
 			net2[j]->sum = 0;
 		}
-
+	
 		NodoPtr out = (NodoPtr) malloc(sizeof(Nodo));
 		out->vecinos = NULL;
-		out->sum = 0;
+		out->sum = 777;
 			
 		for(j=0;j<cuantos;j++){
 			net2[j]->vecinos[0] = out;
-			net2[j]->pesos[0] = randopes();
+			net2[j]->pesos[0] = 999;
 		}
+
 
 
 		for(j=0;j<cuantos;j++)
 			for(m=0;m<cuantos;m++)
 				net[j]->vecinos[m] = net2[m];
 
+		free(net2);
 		return out;
 	}  else {
 
@@ -483,7 +504,7 @@ NodoPtr malla(NodoPtr *net, int capas, int cuantos){
 		for(j=0;j<cuantos;j++)
 			for(m=0;m<cuantos;m++)
 				net[j]->vecinos[m] = net2[m];
-
+free(net2);
 		malla(net2, capas, cuantos);
 	} 
 }
@@ -522,9 +543,9 @@ NodoPtr nodalloc(int cuantos, int capas){
 	for(j=0;j<cuantos;j++)
 		net->vecinos[j]->sum += net->sum * net->pesos[j];
 
-	NodoPtr out = malla( net->vecinos, capas, cuantos);
+	NodoPtr outs = malla( net->vecinos, capas, cuantos);
 
-	net->out = out;
+	net->out = outs;
 
 	return net;
 }
@@ -635,7 +656,7 @@ void liberared(NodoPtr net, int cuantos, int capas){
 	free(net->pesos);
 	free(net->vecinos);
 	free(net->out);
-	free(net);
+//	free(net);
 
 	return;
 }
@@ -644,6 +665,8 @@ void nodfree(NodoPtr net, int cuantos, int capas){
 	int i;
 
 	if(capas > 0){
+		printf("capassssss         %d\n",capas);
+
 		nodfree(net->vecinos[0], cuantos, --capas);
 		for(i=0;i<cuantos;i++){
 			free(net->vecinos[i]->pesos);
@@ -651,6 +674,7 @@ void nodfree(NodoPtr net, int cuantos, int capas){
 			free(net->vecinos[i]);
 		}
 	} else {
+		printf("%d\n");
 		free(net->vecinos[0]->pesos);
 		free(net->vecinos[0]->vecinos);
 		free(net->vecinos[0]);
