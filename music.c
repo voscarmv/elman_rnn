@@ -2,8 +2,8 @@
 #include <stdlib.h>
 
 #define MAXSAMPLES 5000
-#define RANDRANGE 30
-#define NEUROOUTRANGE 10
+#define RANDRANGE 200
+#define NEUROOUTRANGE 100
 
 typedef struct nodo{
 	int fitness;
@@ -65,7 +65,7 @@ int main(int argc, char **argv){
 
 	int capa_salida = 5; // capa cuya primer neurona representa la salida
 	int capa_entrada = 3; // capa a donde ingresan los datos de la malla de memoria
-	int capa_memoria = 9; // capa de la que salen los datos de la malla de memoria
+	int capa_memoria = 8; // capa de la que salen los datos de la malla de memoria
 
 	if(capa_salida > capas)
 		return 1;
@@ -90,11 +90,11 @@ int main(int argc, char **argv){
 	NodoPtr *bebes;
 	int bestanterior = -1;
 
-	for(int x=0;x<3;x++){
+	for(int x=0;x<10000;x++){
 		for(i=0;i<poblacion;i++){
 
 			borrar(redes[i], capas, cuantos);
-			int salida = pulsar(redes[i], data->dataset[0][0], capas, cuantos, capa_salida)+10;
+			int salida = pulsar(redes[i], data->dataset[0][0], capas, cuantos, capa_salida);
 			feedback(redes[i], capa_entrada, capa_memoria, capas, cuantos);
 
 			int fitness = 0;
@@ -104,7 +104,7 @@ int main(int argc, char **argv){
 				if(distancia < 0)
 					distancia *= -1;
 				fitness += distancia;
-				salida = pulsar(redes[i], salida, capas, cuantos, capa_salida)+10;
+				salida = pulsar(redes[i], salida, capas, cuantos, capa_salida);
 				feedback(redes[i], capa_entrada, capa_memoria, capas, cuantos);
 			}
 			redes[i]->fitness = fitness;
@@ -112,26 +112,28 @@ int main(int argc, char **argv){
 
 		qsort(redes, poblacion, sizeof(redes[0]), comparenets);
 
+		printf("%d, ",x);
+
 		if(bestanterior == -1)
 			bestanterior = redes[0]->fitness;
 		if(redes[0]->fitness < bestanterior){
+			printf("\n");
+			printf("Point: %d, %d\n", x, redes[0]->fitness);
 			borrar(redes[0], capas, cuantos);
-			int salida = pulsar(redes[0], data->dataset[0][0], capas, cuantos, capa_salida)+10;
+			int salida = pulsar(redes[0], data->dataset[0][0], capas, cuantos, capa_salida);
 			feedback(redes[0], capa_entrada, capa_memoria, capas, cuantos);
 
 			for(j=1;j<data->dataset_l;j++){
 				printf("Red: %d, Data: %d\n", salida, data->dataset[j][0]);
-				salida = pulsar(redes[0], salida, capas, cuantos, capa_salida)+10;
+				salida = pulsar(redes[0], salida, capas, cuantos, capa_salida);
 				feedback(redes[0], capa_entrada, capa_memoria, capas, cuantos);
 			}
 			bestanterior = redes[0]->fitness;
 		}
-
-		printf("%d: %d\n", x, redes[0]->fitness);
 	
 		bebes = (NodoPtr *) malloc(sizeof(NodoPtr) * poblacion);
 
-		for(j=0;j<poblacion;j++){
+		for(j=poblacion/3;j<poblacion;j++){
 			int choose_dad = rand() % ((poblacion*(poblacion+1)) / 2);
 			int choose_mom = rand() % ((poblacion*(poblacion+1)) / 2);
 			NodoPtr papa = NULL;
@@ -149,9 +151,13 @@ int main(int argc, char **argv){
 				if(papa != NULL && mama != NULL)
 					break;
 			}
-			papa = redes[0]; // el papa siempre va a ser la mejor red
+			if(rand()%2==0)
+				papa = redes[0]; // el papa aveces va a ser la mejor red
 			bebes[j] = netsex(mama, papa, cuantos, capas);
 		}
+
+		for(j = 0; j < poblacion/3; j++)
+			bebes[j] = netclone(redes[j], cuantos, capas);
 
 		for(i=0;i<poblacion;i++){
 			liberared(redes[i], cuantos, capas);
@@ -171,6 +177,8 @@ int main(int argc, char **argv){
 	}
 	free(redes);
 	datfree(data);
+
+	printf("\n---\nbest score %d\n---\n",bestanterior);
 
 	return 0;
 }
@@ -340,10 +348,14 @@ int pulsar(NodoPtr net, int entrada, int capas, int cuantos, int capa_salida){
 	for(j=0;j<cuantos;j++)
 		net->vecinos[j]->sum = net->sum * net->pesos[j];
 
+	for(m=0;m<cuantos;m++)
+		net->vecinos[m]->sum = (net->vecinos[m]->sum/cuantos) % NEUROOUTRANGE;
+
+
 	 propaganet(net->vecinos, capas, cuantos);
 
 	//return net->out->sum;
-	return netoutput(net, capa_salida);
+	return netoutput(net, capa_salida)+NEUROOUTRANGE;
 }
 
 int netoutput(NodoPtr net, int capa){
@@ -374,7 +386,7 @@ int feedback(NodoPtr net, int capa_entrada, int capa_memoria, int capas, int cua
 			capa_in->vecinos[i]->sum += capa_mem->vecinos[j]->pesos[0] * capa_mem->vecinos[j]->sum;
 
 	for(i=0;i<cuantos;i++)
-		capa_in->vecinos[i]->sum %= NEUROOUTRANGE;
+		capa_in->vecinos[i]->sum = (capa_in->vecinos[i]->sum/cuantos) % NEUROOUTRANGE;
 //		capa_in->vecinos[i]->sum /= (cuantos * 2);
 
 	
@@ -387,13 +399,16 @@ int propaganet(NodoPtr *net, int capas, int cuantos){
 		for(m=0;m<cuantos;m++)
 			for(p=0;p<cuantos;p++)
 				net[m]->vecinos[p]->sum += net[m]->sum * net[m]->pesos[p];
-		for(m=0;m<cuantos;m++)
-			net[0]->vecinos[m]->sum %= NEUROOUTRANGE;
+		for(m=0;m<cuantos;m++){
+			net[0]->vecinos[m]->sum = (net[0]->vecinos[m]->sum/cuantos) % NEUROOUTRANGE;
+			//printf("after modulus %d\n", net[0]->vecinos[m]->sum);
+		}
 //			net[0]->vecinos[m]->sum /= cuantos;
 		propaganet(net[0]->vecinos, capas, cuantos);
 	} else {
 		for(m=0;m<cuantos;m++)
 			net[m]->vecinos[0]->sum += net[m]->sum * net[m]->pesos[0];
+		net[0]->vecinos[0]->sum = (net[0]->vecinos[0]->sum/cuantos) % NEUROOUTRANGE;
 	}
 	return 0;
 }
@@ -404,7 +419,7 @@ int borrar(NodoPtr net, int capas, int cuantos){
 		net->vecinos[j]->sum = 0;
 
 	borrasums(net->vecinos, capas, cuantos);
-	return 0;	
+	return 0;
 }
 
 int borrasums(NodoPtr *net, int capas, int cuantos){
