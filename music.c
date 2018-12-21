@@ -2,8 +2,8 @@
 #include <stdlib.h>
 
 #define MAXSAMPLES 5000
-#define RANDRANGE 200
-#define NEUROOUTRANGE 100
+#define RANDRANGE 20
+#define NEUROOUTRANGE 1000
 
 typedef struct nodo{
 	int fitness;
@@ -58,14 +58,14 @@ int main(int argc, char **argv){
 		srand(seed);
 	}
 
-	int i,j;
+	int i,j,k;
 
-	int cuantos = 10; // cantidad de neuronas por cada capa
-	int capas = 10; // cantidad de capas
+	int cuantos = 2; // cantidad de neuronas por cada capa
+	int capas = 5; // cantidad de capas
 
-	int capa_salida = 5; // capa cuya primer neurona representa la salida
-	int capa_entrada = 3; // capa a donde ingresan los datos de la malla de memoria
-	int capa_memoria = 8; // capa de la que salen los datos de la malla de memoria
+	int capa_salida = 3; // capa cuya primer neurona representa la salida
+	int capa_entrada = 1; // capa a donde ingresan los datos de la malla de memoria
+	int capa_memoria = 5; // capa de la que salen los datos de la malla de memoria
 
 	if(capa_salida > capas)
 		return 1;
@@ -76,7 +76,7 @@ int main(int argc, char **argv){
 	if(capa_memoria <= capa_entrada)
 		return 4;
 
-	int poblacion = 500;
+	int poblacion = 1000;
 
 	int input = 1;
 	int output = 1;
@@ -84,13 +84,64 @@ int main(int argc, char **argv){
 	DatasetPtr data = datalloc(1);
 
 	NodoPtr *redes = (NodoPtr *) malloc(sizeof(NodoPtr) * poblacion);
-	for(i=0;i<poblacion;i++)
-		redes[i] = nodalloc(cuantos,capas);
+
+
+
+	for(k=0;k<poblacion;k++){
+
+		int popgreedy = 500;
+		NodoPtr *greedy = (NodoPtr *) malloc(sizeof(NodoPtr) * popgreedy);
+
+		for(i=0;i<popgreedy;i++){
+			greedy[i] = nodalloc(cuantos,capas);
+		}
+
+		for(i=0;i<popgreedy;i++){
+			borrar(greedy[i], capas, cuantos);
+			int salida = pulsar(greedy[i], data->dataset[0][0], capas, cuantos, capa_salida);
+			feedback(greedy[i], capa_entrada, capa_memoria, capas, cuantos);
+
+			int fitness = 0;
+
+			for(j=1;j<data->dataset_l;j++){
+				int distancia = salida - data->dataset[j][0];
+				if(distancia < 0)
+					distancia *= -1;
+				fitness += distancia;
+				salida = pulsar(greedy[i], salida, capas, cuantos, capa_salida);
+				feedback(greedy[i], capa_entrada, capa_memoria, capas, cuantos);
+			}
+
+			greedy[i]->fitness = fitness;
+		}
+
+		qsort(greedy, popgreedy, sizeof(greedy[0]), comparenets);
+
+		printf("%d bestgreedy %d\n", k, greedy[0]->fitness);
+
+		redes[k] = netclone(greedy[0],cuantos,capas);
+
+		for(i=0;i<popgreedy;i++){
+			liberared(greedy[i], cuantos, capas);
+			free(greedy[i]);
+		}
+
+		free(greedy);
+	}
+
+
+	for(k=0;k<poblacion;k++)
+		redes[k] = nodalloc(cuantos, capas);
+
 
 	NodoPtr *bebes;
 	int bestanterior = -1;
+	int sumdistancias = -1;
+	int sumdistanciasant = -1;
 
-	for(int x=0;x<10000;x++){
+	for(int x=0;x<5000;x++){
+		sumdistanciasant=sumdistancias;
+		sumdistancias=0;
 		for(i=0;i<poblacion;i++){
 
 			borrar(redes[i], capas, cuantos);
@@ -107,6 +158,7 @@ int main(int argc, char **argv){
 				salida = pulsar(redes[i], salida, capas, cuantos, capa_salida);
 				feedback(redes[i], capa_entrada, capa_memoria, capas, cuantos);
 			}
+			sumdistancias += fitness;
 			redes[i]->fitness = fitness;
 		}
 
@@ -118,7 +170,7 @@ int main(int argc, char **argv){
 			bestanterior = redes[0]->fitness;
 		if(redes[0]->fitness < bestanterior){
 			printf("\n");
-			printf("Point: %d, %d\n", x, redes[0]->fitness);
+
 			borrar(redes[0], capas, cuantos);
 			int salida = pulsar(redes[0], data->dataset[0][0], capas, cuantos, capa_salida);
 			feedback(redes[0], capa_entrada, capa_memoria, capas, cuantos);
@@ -128,6 +180,10 @@ int main(int argc, char **argv){
 				salida = pulsar(redes[0], salida, capas, cuantos, capa_salida);
 				feedback(redes[0], capa_entrada, capa_memoria, capas, cuantos);
 			}
+			printf("Sumatoria distancias anterior %d\n", sumdistanciasant);
+			printf("Sumatoria distancias actual %d\n", sumdistancias);
+
+			printf("Point: %d, %d\n", x, redes[0]->fitness);
 			bestanterior = redes[0]->fitness;
 		}
 	
@@ -151,7 +207,7 @@ int main(int argc, char **argv){
 				if(papa != NULL && mama != NULL)
 					break;
 			}
-			if(rand()%2==0)
+			if(rand()%3!=0)
 				papa = redes[0]; // el papa aveces va a ser la mejor red
 			bebes[j] = netsex(mama, papa, cuantos, capas);
 		}
@@ -502,8 +558,10 @@ NodoPtr netsex(NodoPtr mom, NodoPtr dad, int cuantos, int capas){
 		if(god == 0)
 			hijo->pesos[j] = randopes();
 		if(god == 1)
+//			hijo->pesos[j] = (mom->pesos[j] + dad->pesos[j])/2;
 			hijo->pesos[j] = mom->pesos[j];
 		if(god == 2)
+//			hijo->pesos[j] = (mom->pesos[j] + dad->pesos[j])/2;
 			hijo->pesos[j] = dad->pesos[j];
 		if(god == 3)
 			hijo->pesos[j] = (mom->pesos[j] + dad->pesos[j])/2;
@@ -522,8 +580,10 @@ int sex(NodoPtr *hijo, NodoPtr *mom, NodoPtr *dad, int capas, int cuantos){
 				if(god == 0)
 					hijo[i]->pesos[j] = randopes();
 				if(god == 1)
+//					hijo[i]->pesos[j] = (mom[i]->pesos[j] + dad[i]->pesos[j])/2;
 					hijo[i]->pesos[j] = mom[i]->pesos[j];
 				if(god == 2)
+//					hijo[i]->pesos[j] = (mom[i]->pesos[j] + dad[i]->pesos[j])/2;
 					hijo[i]->pesos[j] = dad[i]->pesos[j];
 				if(god == 3)
 					hijo[i]->pesos[j] = (mom[i]->pesos[j] + dad[i]->pesos[j])/2;
@@ -535,8 +595,10 @@ int sex(NodoPtr *hijo, NodoPtr *mom, NodoPtr *dad, int capas, int cuantos){
 			if(god == 0)
 				hijo[i]->pesos[0] = randopes();
 			if(god == 1)
+//				hijo[i]->pesos[0] = (mom[i]->pesos[0] + dad[i]->pesos[0])/2;
 				hijo[i]->pesos[0] = mom[i]->pesos[0];
 			if(god == 2)
+//				hijo[i]->pesos[0] = (mom[i]->pesos[0] + dad[i]->pesos[0])/2;
 				hijo[i]->pesos[0] = dad[i]->pesos[0];
 			if(god == 3)
 				hijo[i]->pesos[0] = (mom[i]->pesos[0] + dad[i]->pesos[0])/2;
