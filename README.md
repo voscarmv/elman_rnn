@@ -1,4 +1,4 @@
-# Several implementations of Kuperin's Elman RNN for Forex broadcasting.
+# Several implementations of Kuperin's Elman RNN for Forex forecasting.
 
 > This repository contains source files of several implementations of [Yuri Kuperin](https://artesliberales.spbu.ru/en/faculty/personalii/kuperin)'s [Elman RNN](https://en.wikipedia.org/wiki/Recurrent_neural_network#Elman_networks_and_Jordan_networks) used for [forecasting Forex trends](https://arxiv.org/abs/cond-mat/0304469). 
 
