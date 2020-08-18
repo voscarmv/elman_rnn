@@ -6,9 +6,9 @@ In [their paper](https://arxiv.org/abs/cond-mat/0304469), Kuperin et al describe
 
 These files contain my interpretation of such experiments. I've used a genetic algorithm to evolve the best neural network, to perform the same statistical tests from Kuperin's experiments on it.
 
-I've made a [YouTube video](https://www.youtube.com/watch?v=46WZUcRUPEI) of the way the neural network was evolved:
+I've made a [YouTube video](https://www.youtube.com/watch?v=Yz1NYskvFg0) of the way the neural network was evolved:
 
-[![](header.png)](https://www.youtube.com/watch?v=46WZUcRUPEI)
+[![](header.png)](https://www.youtube.com/watch?v=Yz1NYskvFg0)
 
 The red plot represents the input value for the RNN. The blue plot represents the desired output. The black plots represent suboptimal RNNs from each generation (each generation is represented by a frame on the video). The green plot represents the best (most evolved) RNN from each generation.
 
