@@ -31,6 +31,10 @@ Contact me for instrucitons on how to use this code.
 - Twitter: [@voscarmv](https://twitter.com/voscarmv)
 - Linkedin: [Oscar Mier](https://www.linkedin.com/in/oscar-mier-072984196/) 
 
+## Future features and improvements
+
+- Perform an experiment where I fit the output of the RNN to it's input, and start evolving it from there. An input equal to the output should be closer to the desired RNN weight set so it should be easier to evolve a RNN from that starting point.
+
 ## 🤝 Contributing
 
 Contributions, issues and feature requests are welcome!
